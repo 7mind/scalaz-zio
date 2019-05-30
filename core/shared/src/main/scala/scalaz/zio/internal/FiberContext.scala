@@ -110,7 +110,7 @@ private[zio] final class FiberContext[E, A](
   private[this] final def addStackTraceUnwrap(lambda: AnyRef): Unit =
     stackTrace.put(traceLocationUnwrap(lambda))
 
-  @noinline
+  @inline
   private[this] final def traceLocationDirect(lambda: AnyRef, userLambda: AnyRef): ZTraceElement = {
     if (userLambda ne null)
       tracer.traceLocation(userLambda)
