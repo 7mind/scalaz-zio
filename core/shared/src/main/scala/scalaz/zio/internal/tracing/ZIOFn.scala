@@ -41,6 +41,7 @@ private[zio] abstract class ZIOFn2[-A, -B, +C] extends ZIOFn with Function2[A, B
 }
 
 private[zio] object ZIOFn {
+  // FIXME: MapTraced
   final def apply[A, B](traceAs: AnyRef)(real: A => B): ZIOFn1[A, B] = new ZIOFn1[A, B] {
     final val underlying: AnyRef = traceAs
     final def apply(a: A): B     = real(a)
