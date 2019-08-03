@@ -21,7 +21,7 @@ sealed trait Cause[+E] extends Product with Serializable { self =>
 
   final def &&[E1 >: E](that: Cause[E1]): Cause[E1] = Both(self, that)
 
-  final def ++[E1 >: E](that: Cause[E1]): Cause[E1] = Then(self, that)
+  final def ++[E1 >: E](that: Cause[E <: Nothing]): Cause[E1] = Then(self, that)
 
   final def defects: List[Throwable] =
     self
@@ -83,7 +83,7 @@ sealed trait Cause[+E] extends Product with Serializable { self =>
       case _                 => false
     }
 
-  final def map[E1](f: E => E1): Cause[E1] = self match {
+  final def map[E1 <: Nothing](f: E => E1): Cause[E1] = self match {
     case Fail(value) => Fail(f(value))
     case c @ Die(_)  => c
     case Interrupt   => Interrupt
@@ -315,7 +315,7 @@ object Cause extends Serializable {
     }
   }
 
-  final case class Then[E](left: Cause[E], right: Cause[E]) extends Cause[E] { self =>
+  final case class Then[E](left: Cause[E], right: Cause[Nothing]) extends Cause[E] { self =>
     override final def equals(that: Any): Boolean = that match {
       case traced: Traced[_] => self.equals(traced.cause)
       case other: Cause[_]   => eq(other) || sym(assoc)(other, self) || sym(dist)(self, other)
