@@ -21,7 +21,7 @@ sealed trait Cause[+E] extends Product with Serializable { self =>
 
   final def &&[E1 >: E](that: Cause[E1]): Cause[E1] = Both(self, that)
 
-  final def ++[E1 >: E](that: Cause[E <: Nothing]): Cause[E1] = Then(self, that)
+  final def ++(that: Cause[Nothing]): Cause[E] = Then(self, that)
 
   final def defects: List[Throwable] =
     self
