@@ -100,7 +100,7 @@ sealed trait ZIO[-R, +E, +A] extends Serializable { self =>
    * Returns an effect whose failure and success channels have been mapped by
    * the specified pair of functions, `f` and `g`.
    */
-  final def bimap[E2, B](f: E => E2, g: A => B): ZIO[R, E2, B] = mapError(f).map(g)
+  final def bimap[B](f: E => Nothing, g: A => B): ZIO[R, Nothing, B] = mapError(f).map(g)
 
   /**
    * A less powerful variant of `bracket` where the resource acquired by this
@@ -472,7 +472,7 @@ sealed trait ZIO[-R, +E, +A] extends Serializable { self =>
    * function. This can be used to lift a "smaller" error into a "larger"
    * error.
    */
-  final def mapError[E2](f: E => E2): ZIO[R, E2, A] =
+  final def mapError(f: E => Nothing): ZIO[R, Nothing, A] =
     self.foldCauseM(new ZIO.MapErrorFn(f), new ZIO.SucceedFn(f))
 
   /**
@@ -560,15 +560,15 @@ sealed trait ZIO[-R, +E, +A] extends Serializable { self =>
    * Translates effect failure into death of the fiber, making all failures unchecked and
    * not a part of the type of the effect.
    */
-  final def orDie[E1 >: E](implicit ev: E1 <:< Throwable): ZIO[R, Nothing, A] =
+  final def orDie(implicit ev: Nothing): ZIO[R, Nothing, A] =
     orDieWith(ev)
 
   /**
    * Keeps none of the errors, and terminates the fiber with them, using
    * the specified function to convert the `E` into a `Throwable`.
    */
-  final def orDieWith(f: E => Throwable): ZIO[R, Nothing, A] =
-    (self mapError f) catchAll (IO.die)
+  final def orDieWith(f: E => Nothing): ZIO[R, Nothing, A] =
+    (self mapError f) catchAll (IO.die _)
 
   /**
    * Executes this effect and returns its value, if it succeeds, but
@@ -2455,8 +2455,8 @@ object ZIO extends ZIOFunctions {
     def apply(a: A): ZIO[R, E, A] = new ZIO.Succeed(a)
   }
 
-  final class MapErrorFn[R, E, E2, A](override val underlying: E => E2) extends ZIOFn1[Cause[E], ZIO[R, E2, Nothing]] {
-    def apply(a: Cause[E]): ZIO[R, E2, Nothing] =
+  final class MapErrorFn[R, E, E2, A](override val underlying: E => Nothing) extends ZIOFn1[Cause[E], ZIO[R, E2, Nothing]] {
+    def apply(a: Cause[E]): ZIO[R, Nothing, Nothing] =
       ZIO.halt(a.map(underlying))
   }
 

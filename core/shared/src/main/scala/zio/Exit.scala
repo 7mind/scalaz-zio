@@ -31,7 +31,7 @@ sealed trait Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Sequentially zips the this result with the specified result discarding the first element of the tuple or else returns the failed `Cause[E1]`
    */
-  final def *>[E1 >: E, B](that: Exit[E1, B]): Exit[E1, B] = zipWith(that)((_, _), _ ++ _).map(_._2)
+  final def *>[E1 >: E, B](that: Exit[E1, B]): Exit[E1, B] = zipWith(that)((_, _), _ && _).map(_._2)
 
   /**
    * Parallelly zips the this result with the specified result discarding the second element of the tuple or else returns the failed `Cause[E1]`
@@ -46,17 +46,17 @@ sealed trait Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Sequentially zips the this result with the specified result discarding the second element of the tuple or else returns the failed `Cause[E1]`
    */
-  final def <*[E1 >: E, B](that: Exit[E1, B]): Exit[E1, A] = zipWith(that)((_, _), _ ++ _).map(_._1)
+  final def <*[E1 >: E, B](that: Exit[E1, B]): Exit[E1, A] = zipWith(that)((_, _), _ && _).map(_._1)
 
   /**
    * Sequentially zips the this result with the specified result or else returns the failed `Cause[E1]`
    */
-  final def <*>[E1 >: E, B](that: Exit[E1, B]): Exit[E1, (A, B)] = zipWith(that)((_, _), _ ++ _)
+  final def <*>[E1 >: E, B](that: Exit[E1, B]): Exit[E1, (A, B)] = zipWith(that)((_, _), _ && _)
 
   /**
    * Maps over both the error and value type.
    */
-  final def bimap[E1, A1](f: E => E1, g: A => A1): Exit[E1, A1] = mapError(f).map(g)
+  final def bimap[A1](f: E => Nothing, g: A => A1): Exit[Nothing, A1] = mapError(f).map(g)
 
   /**
    * Replaces the value with the one provided.
@@ -118,7 +118,7 @@ sealed trait Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Maps over the error type.
    */
-  final def mapError[E1](f: E => E1): Exit[E1, A] =
+  final def mapError(f: E => Nothing): Exit[Nothing, A] =
     self match {
       case e @ Success(_) => e
       case Failure(c)     => halt(c.map(f))
@@ -202,7 +202,7 @@ object Exit extends Serializable {
     exits.headOption.map { head =>
       exits
         .drop(1)
-        .foldLeft(head.map(List(_)))((acc, el) => acc.zipWith(el)((acc, el) => el :: acc, _ ++ _))
+        .foldLeft(head.map(List(_)))((acc, el) => acc.zipWith(el)((acc, el) => el :: acc, _ && _))
         .map(_.reverse)
     }
 

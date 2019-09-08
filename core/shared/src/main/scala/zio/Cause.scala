@@ -83,7 +83,7 @@ sealed trait Cause[+E] extends Product with Serializable { self =>
       case _                 => false
     }
 
-  final def map[E1 <: Nothing](f: E => E1): Cause[E1] = self match {
+  final def map(f: E => Nothing): Cause[Nothing] = self match {
     case Fail(value) => Fail(f(value))
     case c @ Die(_)  => c
     case Interrupt   => Interrupt
