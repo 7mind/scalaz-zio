@@ -88,7 +88,7 @@ sealed trait Cause[+E] extends Product with Serializable { self =>
     case c @ Die(_)  => c
     case Interrupt   => Interrupt
 
-    case Then(left, right)    => Then(left.map(f), right.map(f))
+    case Then(left, right)    => Then(left.map(f), right)
     case Both(left, right)    => Both(left.map(f), right.map(f))
     case Traced(cause, trace) => Traced(cause.map(f), trace)
   }

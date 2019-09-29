@@ -11,7 +11,7 @@ class ExitSpec extends Specification with ScalaCheck {
       `Cause#died` and `Cause#stripFailures` are consistent $e1
       `Cause.equals` is symmetric $e2
       `Cause.equals` and `Cause.hashCode` satisfy the contract $e3
-    Then 
+    Then
       `Then.equals` satisfies associativity $e4
       `Then.equals` satisfies distributivity $e5
     Both
@@ -33,12 +33,12 @@ class ExitSpec extends Specification with ScalaCheck {
       (a == b) ==> (a.hashCode must_== (b.hashCode))
     }.set(minTestsOk = 10, maxDiscardRatio = 99.0f)
 
-  private def e4 = prop { (a: Cause[String], b: Cause[String], c: Cause[String]) =>
+  private def e4 = prop { (a: Cause[String], b: Cause.Die, c: Cause.Die) =>
     Then(Then(a, b), c) must_== Then(a, Then(b, c))
     Then(a, Then(b, c)) must_== Then(Then(a, b), c)
   }
 
-  private def e5 = prop { (a: Cause[String], b: Cause[String], c: Cause[String]) =>
+  private def e5 = prop { (a: Cause[String], b: Cause.Die, c: Cause.Die) =>
     Then(a, Both(b, c)) must_== Both(Then(a, b), Then(a, c))
     Then(Both(a, b), c) must_== Both(Then(a, c), Then(b, c))
   }
