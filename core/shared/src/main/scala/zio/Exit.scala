@@ -56,7 +56,7 @@ sealed trait Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Maps over both the error and value type.
    */
-  final def bimap[A1](f: E => Nothing, g: A => A1): Exit[Nothing, A1] = mapError(f).map(g)
+  final def bimap[E1, A1](f: E => E1, g: A => A1): Exit[E1, A1] = mapError(f).map(g)
 
   /**
    * Replaces the value with the one provided.
@@ -118,7 +118,7 @@ sealed trait Exit[+E, +A] extends Product with Serializable { self =>
   /**
    * Maps over the error type.
    */
-  final def mapError(f: E => Nothing): Exit[Nothing, A] =
+  final def mapError[E1](f: E => E1): Exit[E1, A] =
     self match {
       case e @ Success(_) => e
       case Failure(c)     => halt(c.map(f))

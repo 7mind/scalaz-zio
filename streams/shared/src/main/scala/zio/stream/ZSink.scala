@@ -418,16 +418,16 @@ trait ZSink[-R, +E, +A0, -A, +B] { self =>
   /**
    * Maps any error produced by this sink.
    */
-  final def mapError(f: E => Nothing): ZSink[R, Nothing, A0, A, B] =
-    new ZSink[R, Nothing, A0, A, B] {
+  final def mapError[E1](f: E => E1): ZSink[R, E1, A0, A, B] =
+    new ZSink[R, E1, A0, A, B] {
       type State = self.State
 
       val initial = self.initial.mapError(f)
 
-      def step(state: State, a: A): ZIO[R, Nothing, Step[State, A0]] =
+      def step(state: State, a: A): ZIO[R, E1, Step[State, A0]] =
         self.step(state, a).mapError(f)
 
-      def extract(state: State): ZIO[R, Nothing, B] =
+      def extract(state: State): ZIO[R, E1, B] =
         self.extract(state).mapError(f)
     }
 
